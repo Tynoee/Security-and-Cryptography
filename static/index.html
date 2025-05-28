@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🔐 Cryptography Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background"></div>
+
+    <div class="container">
+        <h1>🔐 Cryptography Tool</h1>
+
+        <form id="cryptoForm">
+            <label for="operation">🎯 Select Operation:</label>
+            <select id="operation" class="input colorful">
+                <option value="caesar_encrypt">Caesar Encrypt</option>
+                <option value="caesar_decrypt">Caesar Decrypt</option>
+                <option value="vigenere_encrypt">Vigenère Encrypt</option>
+                <option value="vigenere_decrypt">Vigenère Decrypt</option>
+                <option value="sha256">SHA-256 Hash</option>
+            </select>
+
+            <label for="text">✏️ Enter Text:</label>
+            <input type="text" id="text" class="input colorful" placeholder="Hello World" required>
+
+            <label for="key">🔑 Key (Shift or Keyword):</label>
+            <input type="text" id="key" class="input colorful" placeholder="e.g., 3 or cryptolab">
+
+            <button type="submit">🔎 Process</button>
+        </form>
+
+        <div id="result">
+            <h2>🧾 Result:</h2>
+            <pre id="resultContent">Waiting for input...</pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('cryptoForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const operation = document.getElementById('operation').value;
+            const text = document.getElementById('text').value;
+            const key = document.getElementById('key').value;
+
+            let url = '';
+            if (operation === 'caesar_encrypt') {
+                url = `/caesar/encrypt?text=${encodeURIComponent(text)}&shift=${key || 3}`;
+            } else if (operation === 'caesar_decrypt') {
+                url = `/caesar/decrypt?text=${encodeURIComponent(text)}&shift=${key || 3}`;
+            } else if (operation === 'vigenere_encrypt') {
+                url = `/vigenere/encrypt?text=${encodeURIComponent(text)}&key=${key || 'cryptolab'}`;
+            } else if (operation === 'vigenere_decrypt') {
+                url = `/vigenere/decrypt?text=${encodeURIComponent(text)}&key=${key || 'cryptolab'}`;
+            } else if (operation === 'sha256') {
+                url = `/hash/sha256?text=${encodeURIComponent(text)}`;
+            }
+
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                document.getElementById('resultContent').innerText = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('resultContent').innerText = 'Error: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>
