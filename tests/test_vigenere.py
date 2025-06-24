@@ -24,9 +24,19 @@ class TestVigenere(unittest.TestCase):
         decrypted = vigenere.vigenere_decrypt(encrypted, key)
         self.assertEqual(decrypted, text)
 
+    def test_encrypt_decrypt_empty_string(self):
+        text = ""
+        key = "anykey"
+        encrypted = vigenere.vigenere_encrypt(text, key)
+        decrypted = vigenere.vigenere_decrypt(encrypted, key)
+        self.assertEqual(decrypted, text)
+
+    def test_encrypt_decrypt_nonalpha_characters(self):
+        text = "1234!@#$%^&*()_+-=[]{}|;':,.<>/?"
+        key = "cryptolab"
+        encrypted = vigenere.vigenere_encrypt(text, key)
+        decrypted = vigenere.vigenere_decrypt(encrypted, key)
+        self.assertEqual(decrypted, text)
+
 if __name__ == "__main__":
     unittest.main()
-
-# python -m unittest discover -s tests
-# python -m unittest tests.test_caesar
-

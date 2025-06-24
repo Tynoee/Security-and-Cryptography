@@ -1,5 +1,5 @@
-def read_file(filepath):
-    with open(filepath, "r", encoding="utf-8") as file:
+def read_file(path):
+    with open(path, 'r') as file:
         return file.read()
 
 def write_file(filepath, content):

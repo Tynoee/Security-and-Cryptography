@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crypto App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto App</h1>
+
+        <label for="operation">Select operation:</label>
+        <select id="operation" onchange="toggleFields()">
+            <option value="hash">SHA-256 Hash</option>
+            <option value="encrypt_rsa">RSA Encrypt</option>
+            <option value="decrypt_rsa">RSA Decrypt</option>
+            <option value="encrypt_caesar">Caesar Cipher Encrypt</option>
+            <option value="decrypt_caesar">Caesar Cipher Decrypt</option>
+            <option value="encrypt_vigenere">Vigenère Cipher Encrypt</option>
+            <option value="decrypt_vigenere">Vigenère Cipher Decrypt</option>
+            <option value="sign_file">Sign File</option>
+            <option value="verify_signature">Verify Signature File</option>
+        </select>
+
+        <div id="text-input-field">
+            <label for="text">Input Text:</label>
+            <textarea id="text" rows="5" placeholder="Enter text here..."></textarea>
+        </div>
+
+        <div id="public-key-field" class="key-field">
+            <label for="public_key">Public Key (for RSA encrypt or verify):</label>
+            <textarea id="public_key" rows="5" placeholder="Paste RSA public key here"></textarea>
+        </div>
+
+        <div id="private-key-field" class="key-field">
+            <label for="private_key">Private Key (for RSA decrypt or sign):</label>
+            <textarea id="private_key" rows="7" placeholder="Paste RSA private key here"></textarea>
+        </div>
+
+        <div id="classic-key-field" class="key-field">
+            <label for="classic_key">Classic Cipher Key:</label>
+            <input id="classic_key" type="text" placeholder="Caesar: number; Vigenère: keyword" />
+        </div>
+
+        <div id="file-input-field" class="file-field">
+            <label for="file_input">Select file:</label>
+            <input type="file" id="file_input" />
+        </div>
+
+        <div id="signature-file-field" class="file-field">
+            <label for="signature_file_input">Select signature file (for verify):</label>
+            <input type="file" id="signature_file_input" />
+        </div>
+
+        <button onclick="submitForm()">Submit</button>
+
+        <h2>Result:</h2>
+        <pre id="result"></pre>
+    </div>
+
+<script>
+function toggleFields() {
+    const op = document.getElementById('operation').value;
+    document.getElementById('text-input-field').style.display = (op === 'sign_file' || op === 'verify_signature') ? 'none' : 'block';
+    document.getElementById('public-key-field').style.display = (op === 'encrypt_rsa' || op === 'verify_signature') ? 'block' : 'none';
+    document.getElementById('private-key-field').style.display = (op === 'decrypt_rsa' || op === 'sign_file') ? 'block' : 'none';
+
+    const showClassicKey = ['encrypt_caesar', 'decrypt_caesar', 'encrypt_vigenere', 'decrypt_vigenere'].includes(op);
+    document.getElementById('classic-key-field').style.display = showClassicKey ? 'block' : 'none';
+
+    document.getElementById('file-input-field').style.display = (op === 'sign_file' || op === 'verify_signature') ? 'block' : 'none';
+    document.getElementById('signature-file-field').style.display = (op === 'verify_signature') ? 'block' : 'none';
+}
+
+async function submitForm() {
+    const op = document.getElementById('operation').value;
+    let payload = { operation: op };
+
+    if (op !== 'sign_file' && op !== 'verify_signature') {
+        payload.text = document.getElementById('text').value;
+    }
+
+    if (['encrypt_rsa', 'verify_signature'].includes(op)) {
+        payload.public_key = document.getElementById('public_key').value;
+    }
+    if (['decrypt_rsa', 'sign_file'].includes(op)) {
+        payload.private_key = document.getElementById('private_key').value;
+    }
+
+    if (['encrypt_caesar', 'decrypt_caesar'].includes(op)) {
+        payload.classic_key = parseInt(document.getElementById('classic_key').value);
+        if (isNaN(payload.classic_key)) {
+            alert("Please enter a valid number key for Caesar cipher.");
+            return;
+        }
+    }
+    if (['encrypt_vigenere', 'decrypt_vigenere'].includes(op)) {
+        payload.classic_key = document.getElementById('classic_key').value;
+        if (!payload.classic_key || !/^[a-zA-Z]+$/.test(payload.classic_key)) {
+            alert("Please enter a valid alphabetic keyword for Vigenère cipher.");
+            return;
+        }
+    }
+
+    if (op === 'sign_file' || op === 'verify_signature') {
+        const fileInput = document.getElementById('file_input').files[0];
+        if (!fileInput) {
+            alert("Please select a file.");
+            return;
+        }
+        const fileData = await fileInput.text();
+        payload.file_content = fileData;
+    }
+
+    if (op === 'verify_signature') {
+        const sigFileInput = document.getElementById('signature_file_input').files[0];
+        if (!sigFileInput) {
+            alert("Please select the signature file.");
+            return;
+        }
+        const sigData = await sigFileInput.text();
+        payload.signature = sigData;
+    }
+
+    const response = await fetch('/api/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    document.getElementById('result').textContent = response.ok ? data.result : "Error: " + data.error;
+}
+
+window.onload = toggleFields;
+</script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crypto Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Demo</h1>
+
+        <label for="operation">Select operation:</label>
+        <select id="operation" onchange="toggleKeyFields()">
+            <option value="hash">SHA-256 Hash</option>
+            <option value="encrypt">RSA Encrypt</option>
+            <option value="decrypt">RSA Decrypt</option>
+        </select>
+
+        <label for="text">Input Text / Ciphertext (Base64 for decrypt):</label>
+        <textarea id="text" rows="4" placeholder="Enter your text here"></textarea>
+
+        <div id="public-key-field" class="key-field">
+            <label for="public_key">Public Key (for encryption):</label>
+            <textarea id="public_key" rows="4" placeholder="Paste RSA public key here"></textarea>
+        </div>
+
+        <div id="private-key-field" class="key-field" style="display:none;">
+            <label for="private_key">Private Key (for decryption):</label>
+            <textarea id="private_key" rows="6" placeholder="Paste RSA private key here"></textarea>
+        </div>
+
+        <button onclick="submitForm()">Submit</button>
+
+        <h3>Result:</h3>
+        <textarea id="result" rows="6" readonly></textarea>
+    </div>
+
+    <script>
+        function toggleKeyFields() {
+            const op = document.getElementById('operation').value;
+            document.getElementById('public-key-field').style.display = (op === 'encrypt') ? 'block' : 'none';
+            document.getElementById('private-key-field').style.display = (op === 'decrypt') ? 'block' : 'none';
+        }
+
+        async function submitForm() {
+            const text = document.getElementById('text').value;
+            const operation = document.getElementById('operation').value;
+            const public_key = document.getElementById('public_key').value;
+            const private_key = document.getElementById('private_key').value;
+
+            const payload = { text, operation };
+            if (operation === 'encrypt') payload.public_key = public_key;
+            if (operation === 'decrypt') payload.private_key = private_key;
+
+            const response = await fetch('/api/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('result').value = data.result;
+            } else {
+                document.getElementById('result').value = 'Error: ' + data.error;
+            }
+        }
+    </script>
+</body>
+</html> -->

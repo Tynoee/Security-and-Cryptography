@@ -17,15 +17,3 @@ def caesar_encrypt(text, shift=3, alphabet=None):
 def caesar_decrypt(cipher, shift=3, alphabet=None):
     return caesar_encrypt(cipher, -shift, alphabet)
 
-# def caesar_encrypt(text, shift=3):
-#     result = ""
-#     for char in text:
-#         if char.isalpha():
-#             shift_base = 65 if char.isupper() else 97
-#             result += chr((ord(char) - shift_base + shift) % 26 + shift_base)
-#         else:
-#             result += char
-#     return result
-
-# def caesar_decrypt(cipher, shift=3):
-#     return caesar_encrypt(cipher, -shift)
