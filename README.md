@@ -1,2 +1,2 @@
 # Security-and-Cryptography
-Final week project
+A cryptography app with multiple ciphers for encryption and decrypting 
